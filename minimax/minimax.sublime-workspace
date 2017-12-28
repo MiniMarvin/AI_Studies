@@ -1,0 +1,256 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "AIND-Isolation/isolation/isolation.py",
+			"settings":
+			{
+				"buffer_size": 11844,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "\"\"\"This file is provided as a starting template for writing your own unit\ntests to run and debug your minimax and alphabeta agents locally.  The test\ncases used by the project assistant are not public.\n\"\"\"\n\nimport unittest\n\nimport isolation\nimport game_agent\n\nfrom importlib import reload\n\n\nclass IsolationTest(unittest.TestCase):\n    \"\"\"Unit tests for isolation agents\"\"\"\n\n    def setUp(self):\n        reload(game_agent)\n        self.player1 = \"Player1\"\n        self.player2 = \"Player2\"\n        self.game = isolation.Board(self.player1, self.player2)\n\n    def test_win(self):\n        self.player1 = \"Player1\"\n        self.player2 = \"Player2\"\n        little_game = isolation.Board(self.player1, self.player2)\n        little_game.apply_move((0,0))\n        player = little_game.active_player\n        result = little_game.is_winner() or little_game.is_winner()\n        self.assertTrue()\n\n\nif __name__ == '__main__':\n    unittest.main()\n",
+			"file": "AIND-Isolation/tests/test_game_agent.py",
+			"file_size": 863,
+			"file_write_time": 131586129182440113,
+			"settings":
+			{
+				"buffer_size": 933,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 137.0,
+		"last_filter": "install",
+		"selected_items":
+		[
+			[
+				"install",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 461.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/minimarvin/Documents/studies/ai_studies",
+		"/home/minimarvin/Documents/studies/ai_studies/minimax",
+		"/home/minimarvin/Documents/studies/ai_studies/minimax/AIND-Isolation",
+		"/home/minimarvin/Documents/studies/ai_studies/minimax/AIND-Isolation/isolation",
+		"/home/minimarvin/Documents/studies/ai_studies/minimax/AIND-Isolation/tests"
+	],
+	"file_history":
+	[
+	],
+	"find":
+	{
+		"height": 0.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "AIND-Isolation/isolation/isolation.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11844,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								582,
+								582
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "AIND-Isolation/tests/test_game_agent.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 933,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								789,
+								789
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "minimax.sublime-project",
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 225.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

@@ -38,46 +38,19 @@ def custom_score(game, player):
         return float("inf")
     if game.is_loser(player):
         return float("-inf")
+    # sum of the square degrees of my opponnet move - the squared degree of my move
+    val = 0
+    pmul = 1
+    omul = 1
 
-    val = 0.0
-    pdg = 0.0
-    odg = 0.0
-    
-    # The difference of the squared sum of the degree of the next squares for both players
-    if player == game.active_player:
-        opponent = game.inactive_player
-        player_moves = game.get_legal_moves()
-        
-        ct = len(player_moves)
-        
-        for move in player_moves:
-            bd = game.forecast_move(move)
-            pdg += len(bd.get_legal_moves(player))**4
-            opponent_moves = game.get_legal_moves(opponent)
-            for mv in opponent_moves:
-                odg += len(bd.get_legal_moves(opponent))**4
+    opponent = game.get_opponent(player)
 
-        odg /= float(ct)
+    pdg = len(game.get_legal_moves(player))**2
+    odg = len(game.get_legal_moves(opponent))**2
+    val = pdg - odg
 
-    else:
-        opponent = game.active_player
-        opponent_moves = game.get_legal_moves()
-        pdg = 0
-        odg = 0
-        ct = len(opponent_moves)
-        
-        for move in opponent_moves:
-            bd = game.forecast_move(move)
-            odg += len(bd.get_legal_moves(opponent))**4
-            player_moves = game.get_legal_moves(player)
-            for mv in player_moves:
-                odg += len(bd.get_legal_moves(player))**4
-
-        pdg /= float(ct)
-
-    val = float(pdg) - float(odg)
-
-    return val
+    # return len(game.get_legal_moves(player)) + 1 - len(game.get_legal_moves(game.get_opponent(player)))
+    return float(val)
 
 
 def custom_score_2(game, player):
@@ -106,18 +79,45 @@ def custom_score_2(game, player):
         return float("inf")
     if game.is_loser(player):
         return float("-inf")
-    # sum of the square degrees of my opponnet move - the squared degree of my move
-    val = 0
-    pmul = 1
-    omul = 1
 
-    opponent = game.get_opponent(player)
+    val = 0.0
+    pdg = 0.0
+    odg = 0.0
+    
+    # The difference of the squared sum of the degree of the next squares for both players
+    if player == game.active_player:
+        opponent = game.inactive_player
+        player_moves = game.get_legal_moves()
+        
+        ct = len(player_moves)
+        
+        for move in player_moves:
+            bd = game.forecast_move(move)
+            pdg += len(bd.get_legal_moves(player))**2
+            opponent_moves = game.get_legal_moves(opponent)
+            for mv in opponent_moves:
+                odg += len(bd.get_legal_moves(opponent))**2
 
-    pdg = len(game.get_legal_moves(player))**2
-    odg = len(game.get_legal_moves(opponent))**2
-    val = pdg - odg
+        odg /= float(ct)
 
-    # return len(game.get_legal_moves(player)) + 1 - len(game.get_legal_moves(game.get_opponent(player)))
+    else:
+        opponent = game.active_player
+        opponent_moves = game.get_legal_moves()
+        pdg = 0
+        odg = 0
+        ct = len(opponent_moves)
+        
+        for move in opponent_moves:
+            bd = game.forecast_move(move)
+            odg += len(bd.get_legal_moves(opponent))**2
+            player_moves = game.get_legal_moves(player)
+            for mv in player_moves:
+                odg += len(bd.get_legal_moves(player))**2
+
+        pdg /= float(ct)
+
+    val = float(pdg) - float(odg)
+
     return val
 
 
@@ -156,13 +156,11 @@ def custom_score_3(game, player):
     opponent = game.get_opponent(player)
 
     pdg = len(game.get_legal_moves(player))**4
-    odg = len(game.get_legal_moves(opponent))**4
+    odg = 2*len(game.get_legal_moves(opponent))**4
     val = pdg - odg
 
     # return len(game.get_legal_moves(player)) + 1 - len(game.get_legal_moves(game.get_opponent(player)))
-    return val
-
-    return val
+    return float(val)
 
 
 class IsolationPlayer:

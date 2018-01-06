@@ -213,7 +213,7 @@ def iterative_bfs(problem):
   while not queue.isEmpty():
     node, father, action = queue.pop()
     
-    print queue.list
+    # print queue.list
 
     # if we already visited that node ignore it
     if node in visited:
@@ -237,10 +237,11 @@ def iterative_bfs(problem):
     # check if we found our goal
     if problem.isGoalState(node):
       # print "\n\n\nFOUND AN ANSWER AT: ", node, "\n\n\n"
+      # print "\n\n\n", final_path, "\n\n\n"
       for lst in final_path:
-        if (node, father, action) in lst:
+        if (node, father, action) == lst[len(lst) - 1]:
           final_seq = [a[2] for a in lst if a[2] != None]
-          # print final_seq
+          # print lst
           break
       break
 
@@ -251,7 +252,7 @@ def iterative_bfs(problem):
 
     # use the visited heuristics to avoid the hyper expansion of the tree
 
-  # print final_seq
+  print final_seq
   return final_seq
       
 def uniformCostSearch(problem):
@@ -329,8 +330,68 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
   "Search the node that has the lowest combined cost and heuristic first."
-  "*** YOUR CODE HERE ***"
-  util.raiseNotDefined()
+  # util.raiseNotDefined()
+  st = (0, problem.getStartState())
+  frontier = util.PriorityQueue()
+
+  frontier.push(st[1], st[0])
+
+  cost_list = dict({
+    st[1]: {
+      'cost': 0,
+      'action': ''
+      }
+    })
+
+  goal_node = (-1,-1)
+  seq = []
+  total_cost = 0
+
+  while not frontier.isEmpty():
+    node = frontier.pop()
+    # print "Node: ", node
+
+    if problem.isGoalState(node):
+      # print "Answer found at: ", node
+      goal_node = node
+      total_cost = cost_list[node]['cost'] + heuristic(node, problem)
+      seq += [cost_list[node]['action']]
+      break
+
+    nxt = problem.getSuccessors(node)
+
+    for element in nxt:
+      el_node, el_move, trash = element
+      # print "Cost List: ", cost_list
+
+      # insert elements in the priority queue 
+      new_cost = problem.costFn(el_node) + cost_list[node]['cost'] + heuristic(node, problem)
+      try:
+        old_cost = cost_list[el_node]['cost']
+      except Exception as e:
+        old_cost = float("inf")
+      
+      if new_cost < old_cost:
+        frontier.push(el_node, new_cost)
+        cost_list[el_node] = {'cost': new_cost, 'action': el_move}
+    pass
+
+  # to retrieve the sequence is necessary to go looking for the nodes one by one untill the begin
+  while goal_node != problem.getStartState():
+    nxt = problem.getSuccessors(goal_node)
+    for element in nxt:
+      el_node, el_move, trash = element
+      goal_cost = problem.costFn(goal_node) + heuristic(el_node, problem)
+      if total_cost - goal_cost == cost_list[el_node]['cost']:
+        goal_node = el_node
+        total_cost -= goal_cost
+        seq += [cost_list[el_node]['action']]
+        break
+
+  seq = [a for a in reversed(seq) if a != '']
+  print seq
+
+  return seq
     
   
 # Abbreviations

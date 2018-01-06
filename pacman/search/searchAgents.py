@@ -277,16 +277,44 @@ class CornersProblem(search.SearchProblem):
     self._expanded = 0 # Number of search nodes expanded
     
     "*** YOUR CODE HERE ***"
+    self.goal_count = set()
     
   def getStartState(self):
     "Returns the start state (in your state space, not the full Pacman state space)"
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    return self.startingPosition
     
   def isGoalState(self, state):
     "Returns whether this search state is a goal state of the problem"
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    # normalize the goal state controler
+    x,y = state
+    mul = 0
+
+    while x >= 100:
+      mul += 1
+      x -= 100
+      y -= 100
+
+    # print "original: ", state, "\treduced: ", (x, y)
+
+    # extract the goals from the state
+    buff = mul
+    st_list = [0 for a in self.corners]
+    #iters to fill every state corner with the correct bit which it belongs
+    for idx, a in enumerate(st_list):
+      if buff == 0:
+        break
+
+      st_list[idx] = buff & 1 # extract the lsb
+      buff = buff >> 1
+
+    for a in st_list:
+      if a == 0:
+        return False
+
+    # print "Objective found at: ", state
+    return True
        
   def getSuccessors(self, state):
     """
@@ -310,6 +338,60 @@ class CornersProblem(search.SearchProblem):
       #   hitsWall = self.walls[nextx][nexty]
       
       "*** YOUR CODE HERE ***"
+      # normalize the goal state controler
+      x,y = state
+      mul = 0
+
+      while x >= 100:
+        mul += 1
+        x -= 100
+        y -= 100
+
+      # print "original: ", state, "\treduced: ", (x, y)
+
+      # extract the goals from the state
+      buff = mul
+      st_list = [0 for a in self.corners]
+      #iters to fill every state corner with the correct bit which it belongs
+      for idx, a in enumerate(st_list):
+        if buff == 0:
+          break
+
+        st_list[idx] = buff & 1 # extract the lsb
+        buff = buff >> 1
+
+
+      # search and a successor
+      dx, dy = Actions.directionToVector(action)
+      nextx, nexty = int(x + dx), int(y + dy)
+      
+      if self.walls[nextx][nexty]:
+        continue
+
+      nextState = (nextx, nexty)
+
+      # check if the new state is defined or not
+      for idx, a in enumerate(self.corners):
+        if nextState == a:
+          # print "FOUND PART OF OBJECTIVE!! next state: ", nextState, "\t objective corner: ", a, "\t at: ", state, "\t pointing: ", 2**idx
+          st_list[idx] = 1
+          # print st_list
+          break
+
+      # the next state needs to be controled by the goal reached in the representation
+      # of the pacman position and the already visited nodes
+      adder = 0
+      for idx, val in enumerate(st_list):
+        if val:
+          adder += 2**idx
+        pass
+
+      adder *= 100
+      nextState = (nextx + adder, nexty + adder)
+
+      cost = 1
+      successors.append( ( nextState, action, cost) )
+
       
     self._expanded += 1
     return successors

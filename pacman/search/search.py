@@ -189,7 +189,6 @@ def breadthFirstSearch(problem):
   Search the shallowest nodes in the search tree first.
   [2nd Edition: p 73, 3rd Edition: p 82]
   """
-  # util.raiseNotDefined()
   lst = iterative_bfs(problem)
   return lst
 
@@ -212,8 +211,6 @@ def iterative_bfs(problem):
 
   while not queue.isEmpty():
     node, father, action = queue.pop()
-    
-    # print queue.list
 
     # if we already visited that node ignore it
     if node in visited:
@@ -224,7 +221,6 @@ def iterative_bfs(problem):
     visited.add(node)
 
     # generate new lists with the actual element at it end
-    # print "my lists: "
     for a in final_path:
       try:
         if father == a[len(a) - 1][0]:
@@ -236,12 +232,9 @@ def iterative_bfs(problem):
 
     # check if we found our goal
     if problem.isGoalState(node):
-      # print "\n\n\nFOUND AN ANSWER AT: ", node, "\n\n\n"
-      # print "\n\n\n", final_path, "\n\n\n"
       for lst in final_path:
         if (node, father, action) == lst[len(lst) - 1]:
           final_seq = [a[2] for a in lst if a[2] != None]
-          # print lst
           break
       break
 
@@ -252,7 +245,7 @@ def iterative_bfs(problem):
 
     # use the visited heuristics to avoid the hyper expansion of the tree
 
-  print final_seq
+  # print final_seq
   return final_seq
       
 def uniformCostSearch(problem):
@@ -391,7 +384,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     pass
 
   seq = goal_list
-  print seq
+  # print seq
 
   return seq
     

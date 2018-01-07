@@ -505,7 +505,7 @@ class FoodSearchProblem:
   def getCostOfActions(self, actions):
     """Returns the cost of a particular sequence of actions.  If those actions
     include an illegal move, return 999999"""
-    x,y= self.getStartState()[0]
+    x,y = self.getStartState()[0]
     cost = 0
     for action in actions:
       # figure out the next state and see whether it's legal
@@ -595,10 +595,31 @@ class ClosestDotSearchAgent(SearchAgent):
     food = gameState.getFood()
     walls = gameState.getWalls()
     problem = AnyFoodSearchProblem(gameState)
-    search_func = bfs
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    ## Search with bfs untill find a node and them set the state
+    ## of the food there as nothing and expand the tree to the next node
+    action_lst = []
+    new_state = gameState
+    final_list = []
+    next_position = gameState.getPacmanPosition()
+
+    ## Keep looping untill find the end of the game
+    while not problem.isGoalState(next_position):
+      problem = AnyFoodSearchProblem(new_state)
+
+      ## Get the move list necessary to reach the nextier node
+      action_lst = search.bfs(problem)
+      final_list += list(action_lst)
+
+      ## Modify the state based in a sequence of moves
+      for a in action_lst:
+        new_state = new_state.generateSuccessor(0, a)
+
+      next_position = new_state.getPacmanPosition()
+
+    # print final_list
+    return final_list
   
 class AnyFoodSearchProblem(PositionSearchProblem):
   """
@@ -634,7 +655,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     x,y = state
     
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return state in self.food.asList()
 
 ##################
 # Mini-contest 1 #
@@ -646,6 +667,19 @@ class ApproximateSearchAgent(Agent):
   def registerInitialState(self, state):
     "This method is called before any moves are made."
     "*** YOUR CODE HERE ***"
+    self.answer_list = util.Queue()
+    self.actions = []
+    currentState = state
+    while(currentState.getFood().count() > 0): 
+      action = self.getAction(currentState)
+      self.actions.append(action)
+      legal = currentState.getLegalActions()
+      if action not in legal: 
+        t = (str(action), str(currentState))
+        raise Exception, 'findPathToClosestDot returned an illegal move: %s!\n%s' % t
+      currentState = currentState.generateSuccessor(0, action)
+    self.actionIndex = 0
+    print 'Path found with cost %d.' % len(self.actions)
     
   def getAction(self, state):
     """
@@ -654,8 +688,28 @@ class ApproximateSearchAgent(Agent):
     Directions.{North, South, East, West, Stop}
     """ 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    
+    "Returns a path (a list of actions) to the closest dot, starting from gameState"
+    # Here are some useful elements of the startState
+    if self.answer_list.isEmpty():
+      startPosition = state.getPacmanPosition()
+      food = state.getFood()
+      walls = state.getWalls()
+      ## Search with bfs untill find a node and them set the state
+      ## of the food there as nothing and expand the tree to the next node
+      action_lst = []
+
+      ## Keep looping untill find the end of the game
+      problem = AnyFoodSearchProblem(state)
+      # problem = ModifiedAgent(state)
+
+      ## Get the move list necessary to reach the nextier node
+      action_lst = search.astar(problem)
+      for a in action_lst:
+        self.answer_list.push(a)
+
+    return self.answer_list.pop()
+    # util.raiseNotDefined()
+
 def mazeDistance(point1, point2, gameState):
   """
   Returns the maze distance between any two points, using the search functions

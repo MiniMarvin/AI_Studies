@@ -273,6 +273,8 @@ def uniformCostSearch(problem):
   goal_node = (-1,-1)
   seq = []
   total_cost = 0
+  final_list = [[(st[1], None)]]
+  goal_list = []
 
   while not frontier.isEmpty():
     node = frontier.pop()
@@ -281,41 +283,40 @@ def uniformCostSearch(problem):
     if problem.isGoalState(node):
       # print "Answer found at: ", node
       goal_node = node
-      total_cost = cost_list[node]['cost']
-      seq += [cost_list[node]['action']]
       break
 
     nxt = problem.getSuccessors(node)
 
     for element in nxt:
-      el_node, el_move, trash = element
+      el_node, el_move, el_cost = element
       # print "Cost List: ", cost_list
 
       # insert elements in the priority queue 
-      new_cost = problem.costFn(el_node) + cost_list[node]['cost']
+      new_cost = el_cost + cost_list[node]['cost']
       try:
         old_cost = cost_list[el_node]['cost']
       except Exception as e:
         old_cost = float("inf")
       
+      ## check if we need to visit the node
       if new_cost < old_cost:
+        ## insert the node into the set of possible paths
+        for lst in final_list:
+          if node == lst[len(lst) - 1][0]:
+            nl = list(lst) + [(el_node, el_move)]
+            final_list += [nl]
+
         frontier.push(el_node, new_cost)
         cost_list[el_node] = {'cost': new_cost, 'action': el_move}
     pass
 
-  # to retrieve the sequence is necessary to go looking for the nodes one by one untill the begin
-  while goal_node != problem.getStartState():
-    nxt = problem.getSuccessors(goal_node)
-    for element in nxt:
-      el_node, el_move, trash = element
-      goal_cost = problem.costFn(goal_node)
-      if total_cost - goal_cost == cost_list[el_node]['cost']:
-        goal_node = el_node
-        total_cost -= goal_cost
-        seq += [cost_list[el_node]['action']]
-        break
+  ## Retrieve the winning path
+  for lst in final_list:
+    if goal_node == lst[len(lst) - 1][0]:
+      goal_list = [a[len(a) - 1] for a in lst if a[len(a) - 1] != None]
+    pass
 
-  seq = [a for a in reversed(seq) if a != '']
+  seq = goal_list
   print seq
 
   return seq
@@ -346,6 +347,8 @@ def aStarSearch(problem, heuristic=nullHeuristic):
   goal_node = (-1,-1)
   seq = []
   total_cost = 0
+  final_list = [[(st[1], None)]]
+  goal_list = []
 
   while not frontier.isEmpty():
     node = frontier.pop()
@@ -354,41 +357,40 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     if problem.isGoalState(node):
       # print "Answer found at: ", node
       goal_node = node
-      total_cost = cost_list[node]['cost'] + heuristic(node, problem)
-      seq += [cost_list[node]['action']]
       break
 
     nxt = problem.getSuccessors(node)
 
     for element in nxt:
-      el_node, el_move, trash = element
+      el_node, el_move, el_cost = element
       # print "Cost List: ", cost_list
 
       # insert elements in the priority queue 
-      new_cost = problem.costFn(el_node) + cost_list[node]['cost'] + heuristic(node, problem)
+      new_cost = el_cost + cost_list[node]['cost'] + heuristic(node, problem)
       try:
         old_cost = cost_list[el_node]['cost']
       except Exception as e:
         old_cost = float("inf")
       
+      ## check if we need to visit the node
       if new_cost < old_cost:
+        ## insert the node into the set of possible paths
+        for lst in final_list:
+          if node == lst[len(lst) - 1][0]:
+            nl = list(lst) + [(el_node, el_move)]
+            final_list += [nl]
+
         frontier.push(el_node, new_cost)
         cost_list[el_node] = {'cost': new_cost, 'action': el_move}
     pass
 
-  # to retrieve the sequence is necessary to go looking for the nodes one by one untill the begin
-  while goal_node != problem.getStartState():
-    nxt = problem.getSuccessors(goal_node)
-    for element in nxt:
-      el_node, el_move, trash = element
-      goal_cost = problem.costFn(goal_node) + heuristic(el_node, problem)
-      if total_cost - goal_cost == cost_list[el_node]['cost']:
-        goal_node = el_node
-        total_cost -= goal_cost
-        seq += [cost_list[el_node]['action']]
-        break
+  ## Retrieve the winning path
+  for lst in final_list:
+    if goal_node == lst[len(lst) - 1][0]:
+      goal_list = [a[len(a) - 1] for a in lst if a[len(a) - 1] != None]
+    pass
 
-  seq = [a for a in reversed(seq) if a != '']
+  seq = goal_list
   print seq
 
   return seq

@@ -427,7 +427,38 @@ def cornersHeuristic(state, problem):
   walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
   
   "*** YOUR CODE HERE ***"
-  return 0 # Default to trivial solution
+  # normalize the goal state controler
+  x,y = state
+  mul = 0
+
+  while x >= 100:
+    mul += 1
+    x -= 100
+    y -= 100
+
+  # print "original: ", state, "\treduced: ", (x, y)
+
+  # extract the goals from the state
+  buff = mul
+  st_list = [0 for a in corners]
+  #iters to fill every state corner with the correct bit which it belongs
+  for idx, a in enumerate(st_list):
+    if buff == 0:
+      break
+
+    st_list[idx] = buff & 1 # extract the lsb
+    buff = buff >> 1
+
+  state = (x,y)
+  adder = 0
+  diff = float("inf")
+
+  for idx, a in enumerate(st_list):
+    if a == 0:
+      adder += 50
+
+  # return 0 # Default to trivial solution
+  return adder
 
 class AStarCornersAgent(SearchAgent):
   "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -518,7 +549,27 @@ def foodHeuristic(state, problem):
   """
   position, foodGrid = state
   "*** YOUR CODE HERE ***"
-  return 0
+  begin_food = problem.start[1].count()
+  h = foodGrid.count()*100
+  
+  food_list = foodGrid.asList()
+  diff_sum = 0
+
+  ## Distance sum heuristics
+  for a in food_list:
+    food_diff = 0
+    for b in food_list:
+      food_diff += 100 - (abs(b[0] - a[0]) + abs(b[1] - a[1]))
+
+    dx = abs(a[0] - position[0])
+    dy = abs(a[1] - position[1])
+    diff_sum += dx + dy
+    diff_sum += food_diff
+
+  h = diff_sum
+
+  # return 0
+  return h
   
 class ClosestDotSearchAgent(SearchAgent):
   "Search for all food using a sequence of searches"
@@ -544,6 +595,7 @@ class ClosestDotSearchAgent(SearchAgent):
     food = gameState.getFood()
     walls = gameState.getWalls()
     problem = AnyFoodSearchProblem(gameState)
+    search_func = bfs
 
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()

@@ -340,24 +340,14 @@ class PlanningGraph():
 
     def persist(self, action, is_pos):
         is_neg = not is_pos
-        precond_pos = [expr(str(action))]
-        precond_neg = []
         
         if is_neg:
-            precond_neg = precond_pos
-            precond_pos = []
+            act1 = Action(expr("Noop_pos({})".format(action)), ([action], []), ([action], []))
 
-        effect_add = []
-        effect_rem = []
-        if is_neg:
-            persist = Action(expr("~" + str(action)),
-                    [precond_pos, precond_neg],
-                    [effect_add, effect_rem])
         else:
-            persist = Action(expr(str(action)),
-                        [precond_pos, precond_neg],
-                        [effect_add, effect_rem])
-        return persist
+            act1 = Action(expr("Noop_neg({})".format(action)), ([], [action]), ([], [action]))
+
+        return act1
 
     def add_action_level(self, level):
         """ add an A (action) level to the Planning Graph
@@ -378,6 +368,7 @@ class PlanningGraph():
         
         ## TODO: Solve the problem about the negative preconditions in the generation of the actions by the state
         # print("\n\n\n## ACTIONS ADD ##################")
+        ## OBS: Maybe can emerge an error here
         state_lst = self.gen_state(level)
 
         # print("level: ", level)
@@ -389,8 +380,6 @@ class PlanningGraph():
             actions += self.problem.actions(st)
         
         node_group = set()
-
-        opposite_ones = self.gen_opposites(level)
 
         for a in actions:
             # print(str(a))
@@ -567,39 +556,13 @@ class PlanningGraph():
         mb= node_a2.mutex
  
         ## Check that a and b has it's parents mutexed
-        ## Maybe try to discover the results from the truth table of the expressions
-        print("###########")
-        print(ma, mb)
-        print("a")
         for x in a:
-            print("\t", x.symbol)
-            print("\t", x.mutex)
-        print("b")
-        for x in b:
-            print("\t", x.symbol)
-            print("\t", x.mutex)
-        print("###########")
-
-        # pos = a.precond_pos
-        # neg = b.precond_neg
-
-        print("a: ", a, " b: ", b)
-
-        # for x in pos:
-        #     for y in neg:
-        #         print("x: ", x, "y: ", y)
-        #         if x == y:
-        #             return True
-
-        # print("pos: ", pos, " neg: ", neg)
-        # pos = b.precond_pos
-        # neg = a.precond_neg
-
-        # for x in pos:
-        #     for y in neg:
-        #         print("x: ", x, "y: ", y)
-        #         if x == y:
-        #             return True
+            for y in b:
+                if len(x.mutex) != 0 and len(y.mutex) != 0:
+                    for m in x.mutex:
+                        for n in y.mutex:
+                            if m.symbol == y.symbol or n.symbol == x.symbol:
+                                return True
         return False
 
     def update_s_mutex(self, nodeset: set):
@@ -656,7 +619,19 @@ class PlanningGraph():
         :return: bool
         """
         # TODO test for Inconsistent Support between nodes
-        return False
+        probably_mutex = False
+        
+        if len(node_s1.parents) != 0 or len(node_s2.parents) != 0:
+            for a in node_s1.parents:
+                for b in node_s2.parents:
+                    if a.is_mutex(b):
+                        if node_s1.symbol in a.action.effect_add and node_s2.symbol in a.action.effect_add:
+                            return False
+                        if node_s1.symbol in b.action.effect_add and node_s2.symbol in b.action.effect_add:
+                            return False
+                        probably_mutex = True
+        # return False
+        return probably_mutex
 
     def h_levelsum(self) -> int:
         """The sum of the level costs of the individual goals (admissible if goals independent)
@@ -666,4 +641,33 @@ class PlanningGraph():
         level_sum = 0
         # TODO implement
         # for each goal in the problem, determine the level cost, then add them together)
+        found_lst = set()
+
+        ## Get from starting state which has a level of 0
+        for idx, b in enumerate(self.fs.pos):
+            if b in self.problem.goal:
+                found_lst.add(b)
+
+        # ## Get from the states discovered
+        # for idx, a in enumerate(self.s_levels):
+        #     for b in a:
+        #         if b.symbol not in found_lst:
+        #             if b.symbol in self.problem.goal:
+        #                 level_sum += idx + 1
+        #                 found_lst.add(b.symbol)
+        #                 break
+        #             found_lst.add(b.symbol)
+
+        for goal in self.problem.goal:
+            goal_found = False
+            for idx, a in enumerate(self.s_levels):
+                for b in a:
+                    if b.symbol == goal and b.symbol not in found_lst:
+                        level_sum += idx + 1
+                        goal_found = True
+                        break
+                if goal_found:
+                    break
+
+
         return level_sum

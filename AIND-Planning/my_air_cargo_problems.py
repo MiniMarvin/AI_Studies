@@ -214,37 +214,57 @@ class AirCargoProblem(Problem):
         """
         count = 0
 
-        lst = self.actions_list
-        if(self.goal_test(node.state)):
-            return count
-        queue = [[node.state]]
-        it = 0
-        cache = []
+        # lst = self.actions_list
+        # if(self.goal_test(node.state)):
+        #     return count
+        # # queue = [[node.state]]
+        # states = [(0, node.state)]
+        # it = 0
+        # cache = []
 
         # for el in queue:
-        while True:
-            ## The exception occurs once no longer is possible to apply any action, them break the loop
-            try:
-                el = queue[it]
-            except:
-                break
+        # while True:
+        #     ## The exception occurs once no longer is possible to apply any action, them break the loop
+        #     try:
+        #         el = queue[it]
+        #     except:
+        #         break
 
-            it += 1
-            base = []
+        #     it += 1
+        #     base = []
 
-            for act in lst:
-                if act in el:
-                    continue
+        #     for act in lst:
+        #         if act in el:
+        #             continue
 
-                test = self.result(el[0], act)
-                t = encode_state(FluentState(self.goal, []), self.state_map)
+        #         test = self.result(el[0], act)
+        #         t = encode_state(FluentState(self.goal, []), self.state_map)
                 
-                if self.goal_test(test):
-                    return len(el)
+        #         if self.goal_test(test):
+        #             return len(el)
                 
-                base.append([test] + el[1:] + [act])
+        #         base.append([test] + el[1:] + [act])
             
-            queue = queue + base
+        #     queue = queue + base
+
+
+        # for act in lst:
+        #   new_lst = []
+        #   for st in states:
+        #     res = self.result(st[1], act)
+        #     _, st_lst = zip(*states)
+        #     if res not in st_lst:
+        #       new_lst += [(st[0] + 1, res)]
+        #       if self.goal_test(res):
+        #         return st[0] + 1 
+        #   states += new_lst
+
+        state = node.state
+        kb = PropKB()
+        kb.tell(decode_state(state, self.state_map).pos_sentence())
+        for clause in self.goal:
+            if clause not in kb.clauses:
+                count += 1
 
         return count
 
@@ -320,13 +340,22 @@ def air_cargo_p2() -> AirCargoProblem:
 
 
 def air_cargo_p3() -> AirCargoProblem:
+    """
+    Init(At(C1, SFO) ∧ At(C2, JFK) ∧ At(C3, ATL) ∧ At(C4, ORD) 
+        ∧ At(P1, SFO) ∧ At(P2, JFK) 
+        ∧ Cargo(C1) ∧ Cargo(C2) ∧ Cargo(C3) ∧ Cargo(C4)
+        ∧ Plane(P1) ∧ Plane(P2)
+        ∧ Airport(JFK) ∧ Airport(SFO) ∧ Airport(ATL) ∧ Airport(ORD))
+    Goal(At(C1, JFK) ∧ At(C3, JFK) ∧ At(C2, SFO) ∧ At(C4, SFO))
+    """
+
     cargos = ['C1', 'C2', 'C3', 'C4']
     planes = ['P1', 'P2']
     airports = ['JFK', 'SFO', 'ATL', 'ORD']
     pos = [expr('At(C1, SFO)'),
            expr('At(C2, JFK)'),
            expr('At(C3, ATL)'),
-           expr('At(C3, ORD)'),
+           expr('At(C4, ORD)'),
            expr('At(P1, SFO)'),
            expr('At(P2, JFK)'),
            ]
@@ -359,8 +388,8 @@ def air_cargo_p3() -> AirCargoProblem:
            ]
     init = FluentState(pos, neg)
     goal = [expr('At(C1, JFK)'),
-            expr('At(C2, SFO)'),
             expr('At(C3, JFK)'),
+            expr('At(C2, SFO)'),
             expr('At(C4, SFO)'),
             ]
 

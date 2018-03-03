@@ -219,6 +219,13 @@ class PlanningGraph():
         self.a_levels = []
         self.create_graph()
 
+
+    ## debug
+    def current_time(self):
+        import time
+        current_time = int(round(time.time()))
+        return current_time
+
     def noop_actions(self, literal_list):
         """create persistent action for each possible fluent
 
@@ -293,33 +300,36 @@ class PlanningGraph():
     def gen_state(self, level):
         """
         " Helper function to gen the string that represents state 
+        " Problem: This function has a exponential complexity, which makes it
+        " useless for solving problems
         """
+        print("begin gen state")
         reduced_list = []
         for b in self.s_levels[level]:
             if b.is_pos:
-                reduced_list.append(b)
+                reduced_list.append(b.symbol)
 
         opposite_ones = self.gen_opposites(level)
 
         state_lst = [""]
         for a in self.problem.state_map:
             neg = True
+            print(a)
+            print(reduced_list)
+            print(state_lst)
             
             for b in reduced_list:
-                if b.symbol == a:
-                    # for st in state_lst:
-                    #     st += 'T'
-                    if b.symbol in opposite_ones:
+                if b == a:
+                    if b in opposite_ones:
                         state_lst = [a + "T" for a in state_lst] + [a + "F" for a in state_lst]
                     else:
                         state_lst = [a + "T" for a in state_lst]
                     neg = False
         
             if neg:
-                # for st in state_lst:
-                #     st += 'F'
                 state_lst = [a + "F" for a in state_lst]
-            
+        
+        print("end gen state")
         return state_lst
 
     def gen_opposites(self, level):
@@ -366,39 +376,29 @@ class PlanningGraph():
         #   to see if a proposed PgNode_a has prenodes that are a subset of the previous S level.  Once an
         #   action node is added, it MUST be connected to the S node instances in the appropriate s_level set.
         
-        ## TODO: Solve the problem about the negative preconditions in the generation of the actions by the state
-        # print("\n\n\n## ACTIONS ADD ##################")
-        ## OBS: Maybe can emerge an error here
-        state_lst = self.gen_state(level)
+        begin_time = self.current_time()
 
-        # print("level: ", level)
-        # print(state_lst)
-
-        actions= []
-        
-        for st in state_lst:
-            actions += self.problem.actions(st)
-        
         node_group = set()
+        
+        str_actions = [str(a) for a in self.all_actions]
+        
+        for a in self.all_actions:
+            positives = set([a.symbol for a in self.s_levels[level] if a.is_pos])
+            negatives = set([a.symbol for a in self.s_levels[level] if not a.is_pos])
+            
+            precond_pos = set(a.precond_pos)
+            precond_neg = set(a.precond_neg)
 
-        for a in actions:
-            # print(str(a))
-            node_group.add(PgNode_a(a))
-
-        for b in self.s_levels[level]:
-            node_group.add(PgNode_a(self.persist(b.symbol, b.is_pos)))
+            if precond_pos.issubset(positives) and precond_neg.issubset(negatives):
+                node_group.add(PgNode_a(a))
 
         if level > 0:
             for a in self.a_levels[level - 1]:
                 node_group.add(a)
 
         self.a_levels.append(node_group)
-        # print("nodes: ")
-        # for a in node_group:
-        #     print("\t", str(a.action))
 
-        # print("\nMy opposite ones: ", opposite_ones)
-        # print("#################################\n\n\n")
+        # print("spent ", self.current_time() - begin_time, " seconds in add action")
         pass
 
     def add_literal_level(self, level):
@@ -420,7 +420,8 @@ class PlanningGraph():
         #   parent sets of the S nodes
         
         # print("\n\n\n## LITERALS ADD #################")
-        st = self.gen_state(level - 1)
+        begin_time = self.current_time()
+
         literals = set()
         for act in self.a_levels[level - 1]:
             for node in act.effnodes:
@@ -437,6 +438,7 @@ class PlanningGraph():
         # for a in literals:
         #     print("\t", str(a.symbol))
         # print("#################################\n\n\n")
+        # print("spent ", self.current_time() - begin_time, " seconds in add literals")
         pass
 
     def update_a_mutex(self, nodeset):
@@ -638,6 +640,9 @@ class PlanningGraph():
 
         :return: int
         """
+        
+        begin_time = self.current_time()
+
         level_sum = 0
         # TODO implement
         # for each goal in the problem, determine the level cost, then add them together)
@@ -669,5 +674,6 @@ class PlanningGraph():
                 if goal_found:
                     break
 
+        # print("spent ", self.current_time() - begin_time, " seconds in heuristic")
 
         return level_sum

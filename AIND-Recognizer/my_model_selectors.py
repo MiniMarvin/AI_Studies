@@ -68,6 +68,14 @@ class SelectorBIC(ModelSelector):
     Bayesian information criteria: BIC = -2 * logL + p * logN
     """
 
+    def train_a_word(word, num_hidden_states, features):
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        training = asl.build_training(features)
+        X, lengths = training.get_word_Xlengths(word)
+        model = GaussianHMM(n_components=num_hidden_states, n_iter=1000).fit(X, lengths)
+        logL = model.score(X, lengths)
+        return model, logL
+
     def select(self):
         """ select the best model for self.this_word based on
         BIC score for n between self.min_n_components and self.max_n_components
@@ -75,9 +83,22 @@ class SelectorBIC(ModelSelector):
         :return: GaussianHMM object
         """
         warnings.filterwarnings("ignore", category=DeprecationWarning)
+        best_model = None
+        base_val = float("inf")
+
+        for x in range(self.min_n_components, self.max_n_components + 1):
+            # gen the model
+            model = SelectorConstant(self.sequences, self.lengths, self.this_word, n_constant=x).select()
+            logL = model.score(self.X, self.lengths)
+
+            score = 2*logL + x*math.log(self.lengths)
+            if  base_val > score:
+                best_model = model
+                base_val = score
 
         # TODO implement model selection based on BIC scores
-        raise NotImplementedError
+        return best_model
+        # raise NotImplementedError
 
 
 class SelectorDIC(ModelSelector):

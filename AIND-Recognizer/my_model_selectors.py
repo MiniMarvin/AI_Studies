@@ -67,15 +67,6 @@ class SelectorBIC(ModelSelector):
     http://www2.imm.dtu.dk/courses/02433/doc/ch6_slides.pdf
     Bayesian information criteria: BIC = -2 * logL + p * logN
     """
-
-    def train_a_word(word, num_hidden_states, features):
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-        training = asl.build_training(features)
-        X, lengths = training.get_word_Xlengths(word)
-        model = GaussianHMM(n_components=num_hidden_states, n_iter=1000).fit(X, lengths)
-        logL = model.score(X, lengths)
-        return model, logL
-
     def select(self):
         """ select the best model for self.this_word based on
         BIC score for n between self.min_n_components and self.max_n_components
@@ -86,19 +77,28 @@ class SelectorBIC(ModelSelector):
         best_model = None
         base_val = float("inf")
 
-        for x in range(self.min_n_components, self.max_n_components + 1):
-            # gen the model
-            model = SelectorConstant(self.sequences, self.lengths, self.this_word, n_constant=x).select()
-            logL = model.score(self.X, self.lengths)
+        for n in range(self.min_n_components, self.max_n_components + 1):
+            X = self.X
+            length = self.lengths
+            try:
+                # gen the model
+                model = GaussianHMM(n_components=n, n_iter=1000).fit(X, length)
+                logL = model.score(X, length)
 
-            score = 2*logL + x*math.log(self.lengths)
-            if  base_val > score:
-                best_model = model
-                base_val = score
+                # print(self.lengths)
 
-        # TODO implement model selection based on BIC scores
+                summer = 0
+                for e in length:
+                    summer += e
+
+                score = 2*logL + n*math.log(summer)
+                if  base_val > score:
+                    best_model = model
+                    base_val = score
+            except: ## Occurs when a worng number is accessed
+                pass
+
         return best_model
-        # raise NotImplementedError
 
 
 class SelectorDIC(ModelSelector):
@@ -114,17 +114,78 @@ class SelectorDIC(ModelSelector):
     def select(self):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        # TODO implement model selection based on DIC scores
-        raise NotImplementedError
+        best_model = None
+        group = []
+        fit_group = []
+        buff = float("-inf")
+
+        ## Gen every model and it's score
+        for n in range(self.min_n_components, self.max_n_components + 1):
+            X = self.X
+            length = self.lengths
+            try:
+                # gen the model
+                model = GaussianHMM(n_components=n, n_iter=1000).fit(X, length)
+                logL = model.score(X, length)
+
+                group.append((model, logL))
+
+            except: ## Occurs when a worng number is accessed
+                pass
+
+        ## Compute the DIC value for every model
+        for model, xi in group:
+            summer = 0
+            for m, x in group:
+                if m != model:
+                    summer += x
+            summer = xi - float(summer)/float(len(group) - 1)
+            fit_group.append((model, summer))
+
+        ## Select between every model the best one
+        for model, val in group:
+            if val > buff:
+                best_model = model
+                buff = val
+
+        return best_model
 
 
 class SelectorCV(ModelSelector):
     ''' select best model based on average log Likelihood of cross-validation folds
 
     '''
-
     def select(self):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        # TODO implement model selection using CV
-        raise NotImplementedError
+        best_model = None
+        best_val = float("-inf")
+
+        split_method = KFold(n_splits=len(self.sequences))
+        for n in range(self.min_n_components, self.max_n_components + 1): 
+            sum_val = 0
+
+            base_model = GaussianHMM(n_components=n, n_iter=1000)
+
+            for cv_train_idx, cv_test_idx in split_method.split(self.sequences):
+            # print("Train fold indices:{} Test fold indices:{}".format(cv_train_idx, cv_test_idx))  # view indices of the folds
+                try:
+                    ## Fit the model
+                    X, length = combine_sequences(cv_train_idx, self.sequences)
+                    model = base_model.fit(X, length)
+
+                    ## Test the model
+                    X, length = combine_sequences(cv_test_idx, self.sequences)
+                    logL = model.score(X, length)
+
+                    sum_val += logL
+                    
+                except: ## Occurs when some strange n is passed as a param
+                    pass
+
+            media = float(sum_val)/float(len(self.sequences))
+            if best_val < media:
+                best_model = model
+                best_val = media
+
+        return best_model

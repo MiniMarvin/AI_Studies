@@ -139,7 +139,14 @@ class SelectorDIC(ModelSelector):
             for m, x in group:
                 if m != model:
                     summer += x
-            summer = xi - float(summer)/float(len(group) - 1)
+
+            if summer != 0 and len(group) > 1:
+                summer = xi - float(summer)/float(len(group) - 1)
+            elif summer == 0:
+                summer = xi
+            else:
+                summer = float("-inf")
+
             fit_group.append((model, summer))
 
         ## Select between every model the best one

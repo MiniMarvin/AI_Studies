@@ -91,10 +91,13 @@ class SelectorBIC(ModelSelector):
                 for e in length:
                     summer += e
 
-                score = 2*logL + n*math.log(summer)
+                ## p = n² + 2*n*N_d_points - 1
+                p = n**2 + 2*n*len(X[0]) - 1
+                score = 2*logL + p*math.log(summer)
                 if  base_val > score:
                     best_model = model
                     base_val = score
+
             except: ## Occurs when a worng number is accessed
                 pass
 
@@ -123,31 +126,61 @@ class SelectorDIC(ModelSelector):
         for n in range(self.min_n_components, self.max_n_components + 1):
             X = self.X
             length = self.lengths
+            word_logL = 0
+            others_logL = 0
+            
             try:
-                # gen the model
                 model = GaussianHMM(n_components=n, n_iter=1000).fit(X, length)
-                logL = model.score(X, length)
+            except:
+                continue
 
-                group.append((model, logL))
+            ## Built with the reviewer support
+            for w in self.words:
+                x,l = self.hwords[w]
+                logL = 0
 
-            except: ## Occurs when a worng number is accessed
-                pass
+                ## Compute the logL for the word
+                try:
+                    logL = model.score(x, l)
+                except:
+                    pass
+
+                ## Set the logL to the DIC correct place
+                if w == self.this_word:
+                    word_logL = logL
+                else:
+                    others_logL += logL
+
+            ## Compute the DIC score for the model
+            scoreDIC = word_logL - float(others_logL)/float(len(self.words) - 1)
+            group.append((model, scoreDIC))
+
+
+            # try:
+            #     # gen the model
+            #     model = GaussianHMM(n_components=n, n_iter=1000).fit(X, length)
+            #     logL = model.score(X, length)
+
+            #     group.append((model, logL))
+
+            # except: ## Occurs when a worng number is accessed
+            #     pass
 
         ## Compute the DIC value for every model
-        for model, xi in group:
-            summer = 0
-            for m, x in group:
-                if m != model:
-                    summer += x
+        # for model, xi in group:
+        #     summer = 0
+        #     for m, x in group:
+        #         if m != model:
+        #             summer += x
 
-            if summer != 0 and len(group) > 1:
-                summer = xi - float(summer)/float(len(group) - 1)
-            elif summer == 0:
-                summer = xi
-            else:
-                summer = float("-inf")
+        #     if summer != 0 and len(group) > 1:
+        #         summer = xi - float(summer)/float(len(group) - 1)
+        #     elif summer == 0:
+        #         summer = xi
+        #     else:
+        #         summer = float("-inf")
 
-            fit_group.append((model, summer))
+        #     fit_group.append((model, summer))
 
         ## Select between every model the best one
         for model, val in group:
@@ -168,7 +201,8 @@ class SelectorCV(ModelSelector):
         best_model = None
         best_val = float("-inf")
 
-        split_method = KFold(n_splits=len(self.sequences))
+        # split_method = KFold(n_splits=len(self.sequences))
+        split_method = KFold(n_splits=min(3, len(self.sequences)))
         for n in range(self.min_n_components, self.max_n_components + 1): 
             sum_val = 0
 

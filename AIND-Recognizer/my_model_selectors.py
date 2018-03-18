@@ -93,8 +93,8 @@ class SelectorBIC(ModelSelector):
 
                 ## p = n² + 2*n*N_d_points - 1
                 p = n**2 + 2*n*len(X[0]) - 1
-                score = 2*logL + p*math.log(summer)
-                if  base_val > score:
+                score = -2*logL + p*math.log(summer)
+                if  base_val < score:
                     best_model = model
                     base_val = score
 
@@ -154,33 +154,6 @@ class SelectorDIC(ModelSelector):
             ## Compute the DIC score for the model
             scoreDIC = word_logL - float(others_logL)/float(len(self.words) - 1)
             group.append((model, scoreDIC))
-
-
-            # try:
-            #     # gen the model
-            #     model = GaussianHMM(n_components=n, n_iter=1000).fit(X, length)
-            #     logL = model.score(X, length)
-
-            #     group.append((model, logL))
-
-            # except: ## Occurs when a worng number is accessed
-            #     pass
-
-        ## Compute the DIC value for every model
-        # for model, xi in group:
-        #     summer = 0
-        #     for m, x in group:
-        #         if m != model:
-        #             summer += x
-
-        #     if summer != 0 and len(group) > 1:
-        #         summer = xi - float(summer)/float(len(group) - 1)
-        #     elif summer == 0:
-        #         summer = xi
-        #     else:
-        #         summer = float("-inf")
-
-        #     fit_group.append((model, summer))
 
         ## Select between every model the best one
         for model, val in group:

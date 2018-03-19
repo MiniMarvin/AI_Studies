@@ -94,7 +94,7 @@ class SelectorBIC(ModelSelector):
                 ## p = n² + 2*n*N_d_points - 1
                 p = n**2 + 2*n*len(X[0]) - 1
                 score = -2*logL + p*math.log(summer)
-                if  base_val < score:
+                if  base_val > score:
                     best_model = model
                     base_val = score
 
